@@ -43,7 +43,7 @@
 
                 <div class="mb-6 flex flex-row space-x-29 items-center">
                     <input required type="checkbox" id="acceptTerms" name="acceptTerms">
-                    <label for="acceptTerms">Please Accept The Terms & Conditions</label><br>
+                    <label for="acceptTerms">Accept The Terms & Conditions</label><br>
                 </div>
                 <div style="align-items: center;">
                     <button class="align-items: center bg-blue-500 hover:bg-green-500  text-white font-bold py-2 px-6 border border-blue-700 rounded" type="submit">Submit</button>
@@ -96,4 +96,53 @@
          });
      </script>
      
-     <script src="index.js"></script>    
+     <script>
+	const form_validate=()=>{
+    const name=document.getElementById("name").value;
+    const email=document.getElementById("email").value;
+    const password=document.getElementById("password").value;
+    const dob=document.getElementById("dob").value;
+    const acceptterms=document.getElementById("acceptTerms").checked;
+    var Entries;
+    if(localStorage.getItem('user-entries')===null)
+    Entries=[];
+    else
+    Entries=JSON.parse(localStorage.getItem('user-entries'))
+    Entries.unshift({
+    name:name,
+    email:email,
+    password:password,
+    dob:dob,
+    acceptterms:acceptterms
+    })
+    localStorage.setItem('user-entries',JSON.stringify(Entries));
+    showdata()
+    document.getElementById('name').value="";
+    document.getElementById('email').value="";
+    document.getElementById('password').value="";
+    document.getElementById('dob').value="";
+    document.getElementById('acceptTerms').value="true";
+    }
+    const showdata=()=>{
+    var Entries;
+    if(localStorage.getItem('user-entries')===null)
+    Entries=[];
+    else
+    Entries=JSON.parse(localStorage.getItem('user-entries'))
+    
+    var html="";
+    
+    Entries.forEach((element,intex)=>{
+    html += "<tr>";
+    html += '<td>' + element.name+"</td>";
+    html += '<td>' + element.email+"</td>";
+    html += '<td>' + element.password+"</td>";
+    html += '<td>' + element.dob+"</td>";
+    html += '<td>' + element.acceptterms+"</td>";
+    html += "</tr>";
+    });
+    document.querySelector("#regTable tbody").innerHTML=html;
+    
+    }
+    document.onload=showdata();
+     </script>    
