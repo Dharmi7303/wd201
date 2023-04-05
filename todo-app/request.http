@@ -1,0 +1,14 @@
+### Second request using a variable 
+# @title = Have to go to market
+POST http://localhost:3000/todos/ HTTP/1.1
+content-type: application/json
+
+{
+    "title":"Buy Fruits",
+    "dueDate":"2023-03-29"
+}
+
+# sudo service postgresql start
+# node index.js
+# netstat -ano | findstr :<PORT>
+# taskkill /PID <PID> /F
