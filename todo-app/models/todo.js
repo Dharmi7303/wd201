@@ -1,44 +1,89 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Todo extends Model {
+  class Todos extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
 
-    // static associate(models) {
-    //   // define association here
+    static async overdue() {
+      const overdueTodos = await Todos.findAll({
+        where: {
+          dueDate: { [Op.lt]: new Date() },
+          completed: false,
+        },
+      });
 
-    // }
-
-    static addTodo({ title, dueDate }) {
-      return this.create({ title: title, dueDate: dueDate, completed: false });
+      return overdueTodos;
     }
 
-    static getAllTodos() {
+    static async dueToday() {
+      const dueTodayTodos = await Todos.findAll({
+        where: {
+          dueDate: { [Op.eq]: new Date() },
+          completed: false,
+        },
+      });
+
+      return dueTodayTodos;
+    }
+
+    static async dueLater() {
+      const dueLaterTodos = await Todos.findAll({
+        where: {
+          dueDate: { [Op.gt]: new Date() },
+          completed: false,
+        },
+      });
+
+      return dueLaterTodos;
+    }
+    static async completed() {
+      const completedTodos = await Todos.findAll({
+        where: {
+          completed: true,
+        },
+      });
+
+      return completedTodos;
+    }
+
+    static async getTodos() {
       return this.findAll();
     }
-
+    static async addTodo({ title, dueDate }) {
+      return this.create({ title: title, dueDate: dueDate, completed: false });
+    }
+    static async remove(id) {
+      return this.destroy({
+        where: {
+          id: id,
+        },
+      });
+    }
     markAsCompleted() {
       return this.update({ completed: true });
     }
-
-    static async deleteTodo(id) {
-      return (await this.destroy({ where: { id } })) == 1 ? true : false;
+    setCompletionStatus(bool) {
+      return this.update({ completed: bool });
+    }
+    // eslint-disable-next-line no-unused-vars
+    static associate(models) {
+      // define association here
     }
   }
-  Todo.init(
+  Todos.init(
     {
       title: DataTypes.STRING,
-      dueDate: DataTypes.STRING,
+      dueDate: DataTypes.DATEONLY,
       completed: DataTypes.BOOLEAN,
     },
     {
       sequelize,
-      modelName: "Todo",
+      modelName: "Todos",
     }
   );
-  return Todo;
+  return Todos;
 };
