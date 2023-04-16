@@ -16,7 +16,7 @@
       "prettier --write ."
     ]
   },
-  "author": "Meet Butani <meet.butani2702@gmail.com>",
+  "author": "Dharmi <dharmi.javiya@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "cookie-parser": "^1.4.6",
