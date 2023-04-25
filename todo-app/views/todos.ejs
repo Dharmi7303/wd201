@@ -1,53 +1,160 @@
-<section class="mb-2">
-  <div class="flex items-center py-1">
-    <h5><%= category %></h5>
-    <div class="ml-2">
-      <span
-        class="bg-gray-300 px-1 cursor-pointer rounded text-sm"
-        id="count-<%= id %>"
-        ><%= todos.length %></span
-      >
-    </div>
-  </div>
-  <ul class="list-none">
-    <% for(var i=0; i < todos.length; i++) { %>
-    <li class="Todo-item">
-      <div class="flex w-fit my-2px-2 py-1 items-center hover:bg-purple-50">
-        <input id="todo-checkbox-<%= todos[i].id %>" type="checkbox" <%=
-        todos[i].completed ? "checked" : "" %> class="w-4 h-4 text-blue-600
-        text-gary-100 rounded border" onclick='updateTodo(<%-
-        JSON.stringify({todoID: todos[i].id, completed: !todos[i].completed})
-        %>)' />
-        <label
-          for="todo-checkbox-<%= todos[i].id %>"
-          class="ml-2 text-sm textgray-600 cursor-pointer"
-        >
-          <%= todos[i].title %>
-        </label>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <a
-          href="#"
-          class="ml-2 trash-icon hidden"
-          onclick="deleteTodo(`<%= todos[i].id %>`)"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-4 h-4"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-            />
-          </svg>
-        </a>
+    <meta name="csrf-token" content="<%=csrfToken%>" />
+    <title>  <%=title %>  </title> </title>
+    <link rel="stylesheet" href="./css/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      //get csrf token
+      var token = document
+        .querySelector("meta[name='csrf-token']")
+        .getAttribute("content");
+
+      // change completed status of a todo
+      function updateTodo(id, setStatus) {
+        console.log(id, setStatus);
+        fetch(`/todos/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _csrf: token,
+            completed: setStatus,
+          }),
+        })
+          .then((res) => {
+            console.log("yesss");
+            window.location.reload();
+          })
+          .catch((err) => console.error(err));
+      }
+
+      // delete a todo with id
+      function deleteTodo(id) {
+        fetch(`/todos/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _csrf: token,
+          }),
+        })
+          .then((res) => {
+            window.location.reload();
+          })
+          .catch((err) => console.error(err));
+      }
+    </script>
+  </head>
+
+  <body>
+    <div class="grid grid-cols-6">
+      <div class="col-span-2 col-start-3">
+        <%- include('header.ejs') %>
+
+        <span  class="py-15" >Hi <%=name%>!</span>
+        <br>
+
+
+
+
+        <a href="/signout">Sign Out</a>
+
+        <!-- form for adding a new todo -->
+        <form id="todo-form" action="/todos" method="post">
+          <div class="flex gap-2 py-4">
+            <div class="flex-auto">
+              <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
+
+              <input
+                type="text"
+                name="title"
+                id="title"
+                placeholder="What's Next?"
+                class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm"
+              />
+            </div>
+            <div class="flex-auto">
+              <input
+                type="date"
+                name="dueDate"
+                class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4"
+                id="dueDate"
+              />
+            </div>
+            <div class="flex-none">
+              <button
+                id="sbutton"
+                type="submit"
+                class="bg-green-600 rounded text-white px-5 py-1.5 font-medium mr-2 mb-2"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <% if(messages && messages.error && messages.error.length> 0) { %>
+          <% for(var i=0; i<messages.error.length; i++) { %>
+            <li class="text-red-500 p-1"  >
+              <%= messages.error[i] %>
+            </li>
+            <% } %>
+              <% } %>
+
+        <div>
+          <!-- including all overdue duetoday duelater completedtodos -->
+          <%- include('todo.ejs', {titleField: "Overdue" , "dataField" :
+          overDueTodos}) %> <%- include('todo.ejs', {titleField: "Due Today" ,
+          "dataField" : dueTodayTodos}) %> <%- include('todo.ejs', {titleField:
+          "Due Later" , "dataField" : dueLaterTodos}) %> <%- include('todo.ejs',
+          {titleField: "Completed Items" , "dataField" : completedTodos}) %>
+        </div>
       </div>
-    </li>
+    </div>
+    <%-include('footer.ejs') %>
 
-    <% } %>
-  </ul>
-</section>
+    <!-- <script>
+      // validating title and duedate before submitting
+      const dataTodo = document.getElementById("title");
+
+      const dateField = document.getElementById("dueDate");
+
+      const submit = document.getElementById("sbutton");
+
+      function validate(element) {
+        if (element.value.trim() === "") {
+          element.setCustomValidity(
+            "Todo and Duedate cant be emtpy please fill up"
+          );
+          element.reportValidity();
+        } else {
+          element.setCustomValidity("");
+        }
+      }
+
+      submit.addEventListener("click", () => validate(dataTodo));
+
+      submit.addEventListener("click", () => validate(dateField));
+
+      dataField.addEventListener("input", validate(dataField));
+
+      dataTodo.addEventListener("input", validate(dataTodo));
+    </script> -->
+
+    <script>
+      // changing the autofocus from title input so that so that customvalidaity not shows always
+      window.addEventListener("load", function () {
+        document.activeElement.blur();
+      });
+    </script>
+  </body>
+</html>
