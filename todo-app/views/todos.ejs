@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="csrf-token" content="<%=csrfToken%>" />
+    <title>  <%=title %>  </title> </title>
+    <link rel="stylesheet" href="./css/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      //get csrf token
+      var token = document
+        .querySelector("meta[name='csrf-token']")
+        .getAttribute("content");
+
+      // change completed status of a todo
+      function updateTodo(id, setStatus) {
+        console.log(id, setStatus);
+        fetch(`/todos/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _csrf: token,
+            completed: setStatus,
+          }),
+        })
+          .then((res) => {
+            console.log("yesss");
+            window.location.reload();
+          })
+          .catch((err) => console.error(err));
+      }
+
+      // delete a todo with id
+      function deleteTodo(id) {
+        fetch(`/todos/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            _csrf: token,
+          }),
+        })
+          .then((res) => {
+            window.location.reload();
+          })
+          .catch((err) => console.error(err));
+      }
+    </script>
+  </head>
+
+  <body>
+    <div class="grid grid-cols-6">
+      <div class="col-span-2 col-start-3">
+        <%- include('header.ejs') %>
+
+        <span  class="py-15" >Hi <%=name%>!</span>
+        <br>
+
+
+
+
+        <a href="/signout">Sign Out</a>
+
+        <!-- form for adding a new todo -->
+        <form id="todo-form" action="/todos" method="post">
+          <div class="flex gap-2 py-4">
+            <div class="flex-auto">
+              <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
+
+              <input
+                type="text"
+                name="title"
+                id="title"
+                placeholder="What's Next?"
+                class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm"
+              />
+            </div>
+            <div class="flex-auto">
+              <input
+                type="date"
+                name="dueDate"
+                class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4"
+                id="dueDate"
+              />
+            </div>
+            <div class="flex-none">
+              <button
+                id="sbutton"
+                type="submit"
+                class="bg-green-600 rounded text-white px-5 py-1.5 font-medium mr-2 mb-2"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <% if(messages && messages.error && messages.error.length> 0) { %>
+          <% for(var i=0; i<messages.error.length; i++) { %>
+            <li class="text-red-500 p-1"  >
+              <%= messages.error[i] %>
+            </li>
+            <% } %>
+              <% } %>
+
+        <div>
+          <!-- including all overdue duetoday duelater completedtodos -->
+          <%- include('todo.ejs', {titleField: "Overdue" , "dataField" :
+          overDueTodos}) %> <%- include('todo.ejs', {titleField: "Due Today" ,
+          "dataField" : dueTodayTodos}) %> <%- include('todo.ejs', {titleField:
+          "Due Later" , "dataField" : dueLaterTodos}) %> <%- include('todo.ejs',
+          {titleField: "Completed Items" , "dataField" : completedTodos}) %>
+        </div>
+      </div>
+    </div>
+    <%-include('footer.ejs') %>
+
+    <!-- <script>
+      // validating title and duedate before submitting
+      const dataTodo = document.getElementById("title");
+
+      const dateField = document.getElementById("dueDate");
+
+      const submit = document.getElementById("sbutton");
+
+      function validate(element) {
+        if (element.value.trim() === "") {
+          element.setCustomValidity(
+            "Todo and Duedate cant be emtpy please fill up"
+          );
+          element.reportValidity();
+        } else {
+          element.setCustomValidity("");
+        }
+      }
+
+      submit.addEventListener("click", () => validate(dataTodo));
+
+      submit.addEventListener("click", () => validate(dateField));
+
+      dataField.addEventListener("input", validate(dataField));
+
+      dataTodo.addEventListener("input", validate(dataTodo));
+    </script> -->
+
+    <script>
+      // changing the autofocus from title input so that so that customvalidaity not shows always
+      window.addEventListener("load", function () {
+        document.activeElement.blur();
+      });
+    </script>
+  </body>
+</html>
