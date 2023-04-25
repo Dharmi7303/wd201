@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="csrf-token" content="<%=csrfToken%>" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="./css/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+     
+
+      
+        
+    </script>
+  </head>
+
+  <body>
+    <div class="grid grid-cols-6">
+      <div class="col-span-2 col-start-3">
+        <%- include('header.ejs') %>
+
+        <p class="py-2">Welcome to To-Do Application</p>
+        <p class="py-2">
+         
+          <a class="text-green-600" href="/todos">My Todo-list</a>
+        </p>
+        <p class="py-2">
+          New to here <a class="text-green-600" href="/signup">signup</a>
+        </p>
+        <p class="py-2">
+          Already had an account
+          <a class="text-green-600" href="/login">login</a>
+        </p>
+
+        <!-- form for adding a new todo -->
+      </div>
+    </div>
+    <%-include('footer.ejs') %>
+  </body>
+</html>
