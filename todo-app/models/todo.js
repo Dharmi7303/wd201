@@ -1,80 +1,112 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+
 "use strict";
 const { Model, Op } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
-  class Todos extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+  class Todo extends Model {
+    static associate(models) {
+      Todo.belongsTo(models.User, { foreignKey: "userID" });
+    }
 
-    static async overdue() {
-      const overdueTodos = await Todos.findAll({
-        where: {
-          dueDate: { [Op.lt]: new Date() },
+    static addTodo(title, dueDate, userID) {
+      try {
+        // title = JSON.stringify(title)
+        // console.log(typeof(JSON.stringify(title)))
+        // console.log(typeof(dueDate))
+        console.log(userID);
+        return this.create({
+          title,
+          dueDate,
           completed: false,
-        },
-      });
-
-      return overdueTodos;
+          userID: userID,
+        });
+      } catch (error) {
+        console.error("Error adding a task", error);
+      }
     }
 
-    static async dueToday() {
-      const dueTodayTodos = await Todos.findAll({
+    static getTodos(userID) {
+      return this.findAll({
+        order: [["id", "ASC"]],
         where: {
-          dueDate: { [Op.eq]: new Date() },
-          completed: false,
+          userID,
         },
       });
-
-      return dueTodayTodos;
     }
 
-    static async dueLater() {
-      const dueLaterTodos = await Todos.findAll({
-        where: {
-          dueDate: { [Op.gt]: new Date() },
-          completed: false,
-        },
-      });
-
-      return dueLaterTodos;
-    }
-    static async completed() {
-      const completedTodos = await Todos.findAll({
-        where: {
-          completed: true,
-        },
-      });
-
-      return completedTodos;
-    }
-
-    static async getTodos() {
-      return this.findAll();
-    }
-    static async addTodo({ title, dueDate }) {
-      return this.create({ title: title, dueDate: dueDate, completed: false });
-    }
-    static async remove(id) {
+    //delete todo
+    static async remove(id, userID) {
       return this.destroy({
         where: {
-          id: id,
+          id,
+          userID,
         },
       });
     }
-    markAsCompleted() {
-      return this.update({ completed: true });
+
+    // return dueLater items
+    static async dueLater(userID) {
+      return Todo.findAll({
+        where: {
+          completed: false,
+          dueDate: {
+            [Op.gt]: new Date(),
+          },
+          userID,
+        },
+        order: [["id", "ASC"]],
+      });
     }
-    setCompletionStatus(bool) {
-      return this.update({ completed: bool });
+
+    // return dueToday items
+    static async dueToday(userID) {
+      return Todo.findAll({
+        where: {
+          completed: false,
+          dueDate: {
+            [Op.eq]: new Date(),
+          },
+          userID,
+        },
+        order: [["id", "ASC"]],
+      });
     }
-    // eslint-disable-next-line no-unused-vars
-    static associate(models) {
-      // define association here
+
+    // return overdue items
+    static async overDue(userID) {
+      return Todo.findAll({
+        where: {
+          completed: false,
+          dueDate: {
+            [Op.lt]: new Date(),
+          },
+          userID,
+        },
+        order: [["id", "ASC"]],
+      });
+    }
+
+    //return completed items i.e complete status equals true
+    static async completedItems(userID) {
+      return Todo.findAll({
+        where: {
+          completed: true,
+          userID,
+        },
+
+        order: [["id", "ASC"]],
+      });
+    }
+
+    // sets the completed status of a todo accordingly
+    async setCompletionStatus(boolvalue) {
+      return this.update({ completed: boolvalue });
     }
   }
-  Todos.init(
+
+  Todo.init(
     {
       title: DataTypes.STRING,
       dueDate: DataTypes.DATEONLY,
@@ -82,8 +114,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Todos",
+      modelName: "Todo",
+      logging: false,
     }
   );
-  return Todos;
+
+  return Todo;
 };
